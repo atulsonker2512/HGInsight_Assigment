@@ -1,0 +1,30 @@
+{
+  "name": "Churn_Hourly_Pipeline",
+  "properties": {
+    "activities": [
+      {
+        "name": "Copy_CSV_To_Staging",
+        "type": "Copy",
+        "typeProperties": {
+          "source": { "type": "DelimitedTextSource" },
+          "sink": {
+            "type": "SqlSink",
+            "preCopyScript": "TRUNCATE TABLE dbo.churn_staging;"
+          }
+        },
+        "inputs": [{ "referenceName": "Blob_CustomerChurn", "type": "DatasetReference" }],
+        "outputs": [{ "referenceName": "SQL_Churn_Staging", "type": "DatasetReference" }]
+      },
+      {
+        "name": "Transform_Customer_Churn",
+        "type": "DataFlow",
+        "dependsOn": [{ "activity": "Copy_CSV_To_Staging", "dependencyConditions": ["Succeeded"] }],
+        "typeProperties": {
+          "dataFlow": { "referenceName": "DF_Churn_Transform", "type": "DataFlowReference" }
+        }
+      }
+    ],
+    "annotations": [],
+    "runFrequency": "Hourly"
+  }
+}

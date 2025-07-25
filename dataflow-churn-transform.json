@@ -1,0 +1,32 @@
+{
+  "name": "DF_Churn_Transform",
+  "properties": {
+    "type": "MappingDataFlow",
+    "typeProperties": {
+      "sources": [
+        { "name": "StagingSrc", "dataset": { "referenceName": "SQL_Churn_Staging", "type": "DatasetReference" } }
+      ],
+      "transformations": [
+        {
+          "name": "DerivedDefaults",
+          "type": "DerivedColumn",
+          "derivedColumns": [
+            { "name": "CustomerHash", "expression": "sha2(toString(CustomerID), 256)" },
+            { "name": "Gender", "expression": "iif(isNull(Gender), 'Unknown', Gender)" },
+            { "name": "ContractType", "expression": "iif(isNull(ContractType), 'No Contract', ContractType)" },
+            { "name": "InternetService", "expression": "iif(isNull(InternetService), 'None', InternetService)" },
+            { "name": "TotalCharges", "expression": "iif(isNull(TotalCharges), avg(TotalCharges) over(), TotalCharges)" }
+          ],
+          "inputs": ["StagingSrc"]
+        }
+      ],
+      "sinks": [
+        {
+          "name": "ChurnCleanedSink",
+          "dataset": { "referenceName": "SQL_Churn_Cleaned", "type": "DatasetReference" },
+          "formatSettings": { "type": "SqlWriteSettings" }
+        }
+      ]
+    }
+  }
+}

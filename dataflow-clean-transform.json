@@ -1,0 +1,34 @@
+{
+  "name": "DF_Clean_Anonymize",
+  "properties": {
+    "type": "MappingDataFlow",
+    "typeProperties": {
+      "sources": [
+        { "name": "StagingSrc", "dataset": { "referenceName": "SQL_Employees_Staging", "type": "DatasetReference" } }
+      ],
+      "transformations": [
+        {
+          "name": "DerivedDefaults",
+          "type": "DerivedColumn",
+          "derivedColumns": [
+            { "name": "name", "expression": "iif(isNull(name), 'Unknown', name)" },
+            { "name": "email", "expression": "iif(isNull(email), 'anonymous@example.com', sha2(email, 256))" },
+            { "name": "age", "expression": "iif(isNull(age), 30, age)" },
+            {
+              "name": "salary",
+              "expression": "iif(isNull(salary), avg(salary) over(), salary)"
+            }
+          ],
+          "inputs": ["StagingSrc"]
+        }
+      ],
+      "sinks": [
+        {
+          "name": "ReportSink",
+          "dataset": { "referenceName": "SQL_Employees_Cleaned", "type": "DatasetReference" },
+          "formatSettings": { "type": "SqlWriteSettings" }
+        }
+      ]
+    }
+  }
+}

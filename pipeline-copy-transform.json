@@ -1,0 +1,30 @@
+{
+  "name": "ELT_Hourly_Pipeline",
+  "properties": {
+    "activities": [
+      {
+        "name": "Copy_From_Blob_To_Staging",
+        "type": "Copy",
+        "typeProperties": {
+          "source": { "type": "DelimitedTextSource" },
+          "sink": {
+            "type": "SqlSink",
+            "preCopyScript": "TRUNCATE TABLE dbo.employees_staging;"
+          }
+        },
+        "inputs": [{ "referenceName": "Blob_Employees_CSV", "type": "DatasetReference" }],
+        "outputs": [{ "referenceName": "SQL_Employees_Staging", "type": "DatasetReference" }]
+      },
+      {
+        "name": "Transform_Using_DataFlow",
+        "type": "DataFlow",
+        "dependsOn": [{ "activity": "Copy_From_Blob_To_Staging", "dependencyConditions": ["Succeeded"] }],
+        "typeProperties": {
+          "dataFlow": { "referenceName": "DF_Clean_Anonymize", "type": "DataFlowReference" }
+        }
+      }
+    ],
+    "annotations": [],
+    "runFrequency": "Hourly"
+  }
+}
